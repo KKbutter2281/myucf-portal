@@ -1,18 +1,8 @@
+'use client';
+
 import React from 'react';
 import { Calendar, UserCircle, CreditCard, BellRing, InfoIcon } from 'lucide-react';
-
-const EventCard = ({ title, date, time }) => (
-  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 hover:bg-yellow-100 transition-colors duration-300 ease-in-out">
-    <div className="flex items-center justify-between">
-      <h3 className="font-semibold text-gray-800">{title}</h3>
-      <Calendar className="text-yellow-500 w-5 h-5" />
-    </div>
-    <div className="mt-2 text-sm text-gray-600">
-      <p>{date}</p>
-      <p>{time}</p>
-    </div>
-  </div>
-);
+import EventCard from '@/components/event-card';
 
 const Events = () => (
   <div className="bg-white border border-yellow-200 rounded-xl shadow-lg overflow-hidden">
@@ -31,65 +21,121 @@ const Events = () => (
   </div>
 );
 
-const Academics = () => (
-  <div className="bg-white border border-yellow-200 rounded-xl shadow-lg overflow-hidden">
-    <div className="bg-yellow-100 px-6 py-4 border-b border-yellow-200 flex items-center justify-between">
-      <h2 className="text-xl font-bold text-gray-800">Academics</h2>
-      <UserCircle className="text-yellow-500 w-6 h-6" />
-    </div>
-    <div className="p-6">
-      <div className="flex space-x-4 mb-6">
-        <button className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg transition-colors duration-300">
-          My Degree
-        </button>
-        <button className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg transition-colors duration-300">
-          My Advisor
-        </button>
-      </div>
-      <div className="space-y-2">
-        <p className="text-lg font-semibold flex items-center">
-          <InfoIcon className="mr-2 w-5 h-5 text-yellow-500" />
-          John Grouse
-        </p>
-        <p className="text-sm text-gray-600">800-567-7777</p>
-        <p className="text-sm text-gray-600">johngrouse@ucf.edu</p>
-      </div>
-    </div>
-  </div>
-);
+const Academics = () => {
+  const [showDegree, setShowDegree] = React.useState(false);
 
-const Finances = () => (
-  <div className="bg-white border border-yellow-200 rounded-xl shadow-lg overflow-hidden">
-    <div className="bg-yellow-100 px-6 py-4 border-b border-yellow-200 flex items-center justify-between">
-      <h2 className="text-xl font-bold text-gray-800">Financial Overview</h2>
-      <CreditCard className="text-yellow-500 w-6 h-6" />
-    </div>
-    <div className="p-6">
-      <div className="flex space-x-4 mb-6">
-        <button className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg transition-colors duration-300">
-          Financial Aid
-        </button>
-        <button className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg transition-colors duration-300">
-          Student Bill
-        </button>
-        <button className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg transition-colors duration-300">
-          UCF ID Card
-        </button>
+  return (
+    <div className="bg-white border border-yellow-200 rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-yellow-100 px-6 py-4 border-b border-yellow-200 flex items-center justify-between">
+        <h2 className="text-xl font-bold text-gray-800">Academics</h2>
+        <UserCircle className="text-yellow-500 w-6 h-6" />
       </div>
-      <div className="space-y-4">
-        <p className="text-lg text-gray-800">
-          Total Due: <span className="font-bold text-red-600">$7,032.41</span>
-        </p>
-        <p className="text-sm text-gray-600">
-          FAFSA SAI: <span className="font-semibold">2019</span>
-        </p>
+      <div className="p-6">
+        <div className="flex space-x-4 mb-6">
+          <button 
+            className={`flex-1 ${showDegree ? 'bg-yellow-400' : 'bg-gray-200 hover:bg-gray-300'} text-gray-800 py-2 rounded-lg transition-colors duration-300`}
+            onClick={() => setShowDegree(true)}
+          >
+            My Degree
+          </button>
+          <button 
+            className={`flex-1 ${!showDegree ? 'bg-yellow-400' : 'bg-gray-200 hover:bg-gray-300'} text-gray-800 py-2 rounded-lg transition-colors duration-300`}
+            onClick={() => setShowDegree(false)}
+          >
+            My Advisor
+          </button>
+        </div>
+        <div className="space-y-2">
+          {showDegree ? (
+            <>
+              <p className="text-lg font-semibold flex items-center">
+                <InfoIcon className="mr-2 w-5 h-5 text-yellow-500" />
+                Computer Science, B.S.
+              </p>
+              <p className="text-sm text-gray-600">Expected Graduation: May 2026</p>
+              <p className="text-sm text-gray-600">GPA: 3.8</p>
+              <p className="text-sm text-gray-600">Credits Completed: 64</p>
+            </>
+          ) : (
+            <>
+              <p className="text-lg font-semibold flex items-center">
+                <InfoIcon className="mr-2 w-5 h-5 text-yellow-500" />
+                John Grouse
+              </p>
+              <p className="text-sm text-gray-600">800-567-7777</p>
+              <p className="text-sm text-gray-600">johngrouse@ucf.edu</p>
+            </>
+          )}
+        </div>
       </div>
-      <button className="mt-6 w-full bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-3 rounded-lg transition-colors duration-300">
-        Pay Now
-      </button>
     </div>
-  </div>
-);
+  );
+};
+
+const Finances = () => {
+  const [activeTab, setActiveTab] = React.useState('aid'); // 'aid', 'bill', or 'id'
+
+  return (
+    <div className="bg-white border border-yellow-200 rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-yellow-100 px-6 py-4 border-b border-yellow-200 flex items-center justify-between">
+        <h2 className="text-xl font-bold text-gray-800">Financial Overview</h2>
+        <CreditCard className="text-yellow-500 w-6 h-6" />
+      </div>
+      <div className="p-6">
+        <div className="flex space-x-4 mb-6">
+          <button 
+            className={`flex-1 ${activeTab === 'aid' ? 'bg-yellow-400' : 'bg-gray-200 hover:bg-gray-300'} text-gray-800 py-2 rounded-lg transition-colors duration-300`}
+            onClick={() => setActiveTab('aid')}
+          >
+            Financial Aid
+          </button>
+          <button 
+            className={`flex-1 ${activeTab === 'bill' ? 'bg-yellow-400' : 'bg-gray-200 hover:bg-gray-300'} text-gray-800 py-2 rounded-lg transition-colors duration-300`}
+            onClick={() => setActiveTab('bill')}
+          >
+            Student Bill
+          </button>
+          <button 
+            className={`flex-1 ${activeTab === 'id' ? 'bg-yellow-400' : 'bg-gray-200 hover:bg-gray-300'} text-gray-800 py-2 rounded-lg transition-colors duration-300`}
+            onClick={() => setActiveTab('id')}
+          >
+            UCF ID Card
+          </button>
+        </div>
+        <div className="space-y-4">
+          {activeTab === 'aid' && (
+            <>
+              <p className="text-lg text-gray-800">Financial Aid Status: <span className="font-semibold text-green-600">Approved</span></p>
+              <p className="text-sm text-gray-600">FAFSA SAI: <span className="font-semibold">2019</span></p>
+              <p className="text-sm text-gray-600">Pell Grant: <span className="font-semibold">$3,500</span></p>
+              <p className="text-sm text-gray-600">Bright Futures: <span className="font-semibold">$3,000</span></p>
+            </>
+          )}
+          {activeTab === 'bill' && (
+            <>
+              <p className="text-lg text-gray-800">Total Due: <span className="font-bold text-red-600">$7,032.41</span></p>
+              <p className="text-sm text-gray-600">Tuition: <span className="font-semibold">$6,500.00</span></p>
+              <p className="text-sm text-gray-600">Fees: <span className="font-semibold">$532.41</span></p>
+              <button className="mt-6 w-full bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-3 rounded-lg transition-colors duration-300">
+                Pay Now
+              </button>
+            </>
+          )}
+          {activeTab === 'id' && (
+            <>
+              <p className="text-lg text-gray-800">UCF ID: <span className="font-semibold">1234567</span></p>
+              <p className="text-sm text-gray-600">Balance: <span className="font-semibold">$250.00</span></p>
+              <p className="text-sm text-gray-600">Meal Plan: <span className="font-semibold">Knight Plan</span></p>
+              <button className="mt-6 w-full bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-3 rounded-lg transition-colors duration-300">
+                Add Funds
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Announcements = () => (
   <div className="bg-white border border-yellow-200 rounded-xl shadow-lg overflow-hidden">

@@ -9,10 +9,9 @@ const menuItems = [
     {
         title: "Profile & Security",
         tabs: [
-            { name: "FERPA", url: "/profile-security/ferpa" },
-            { name: "Emails & Phone Numbers", url: "/profile-security/emails-phones" },
-            { name: "Login Information", url: "/profile-security/login-info" },
-            { name: "UCFID & NetID", url: "/profile-security/ucfid-netid" },
+            { name: "FERPA", url: "/profile/ferpa" },
+            { name: "Personal Information", url: "/profile/personal" },
+            { name: "Login Information", url: "/profile/login" },
         ],
     },
     {
@@ -21,7 +20,7 @@ const menuItems = [
             { name: "Class Schedule", url: "/academics/class-schedule" },
             { name: "Degree Audit", url: "/academics/degree-audit" },
             { name: "Transcripts", url: "/academics/transcripts" },
-            { name: "Enrollment Verification", url: "/academics/enrollment-verification" },
+            { name: "Enrollment Verification", url: "/academics/enrollment" },
         ],
     },
     {
@@ -36,13 +35,15 @@ const menuItems = [
         tabs: [
             { name: "Tuition & Fees", url: "/financial-services/tuition-fees" },
             { name: "Financial Aid", url: "/financial-services/financial-aid" },
+            { name: "Pay My Bill", url: "/financial-services/pay" },
+            { name: "Donate to UCF (giv moneh)", url: "/financial-services/donate" },
         ],
     },
     {
         title: "Campus Living",
         tabs: [
             { name: "Housing", url: "/campus-living/housing" },
-            { name: "Room Assignment", url: "/campus-living/room-assignment" },
+            { name: "Clubs", url: "/campus-living/clubs" },
             { name: "Dining Locations", url: "/campus-living/dining-locations" },
             { name: "Meal Plans", url: "/campus-living/meal-plans" },
         ],
