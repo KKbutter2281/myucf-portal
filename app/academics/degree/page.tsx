@@ -1,143 +1,184 @@
-'use client';
+import { CheckCircle, AlertCircle, Clock, BookOpen } from 'lucide-react';
 
-import React from 'react';
-import { BookOpen, Check, AlertCircle, Clock } from 'lucide-react';
-
-interface Course {
-  code: string;
+interface Requirement {
   name: string;
   credits: number;
-  status: 'completed' | 'in-progress' | 'pending';
-}
-
-interface RequirementBlockProps {
-  title: string;
-  credits: number;
   completed: number;
-  courses: Course[];
+  status: 'completed' | 'in-progress' | 'not-started';
+  courses: {
+    code: string;
+    name: string;
+    credits: number;
+    grade?: string;
+    status: 'completed' | 'in-progress' | 'planned';
+    term?: string;
+  }[];
 }
 
-const RequirementBlock: React.FC<RequirementBlockProps> = ({ title, credits, completed, courses }) => (
-  <div className="bg-white border border-yellow-200 rounded-lg p-6 mb-6">
-    <div className="flex justify-between items-center mb-4">
-      <h3 className="text-xl font-bold text-gray-800">{title}</h3>
-      <div className="flex items-center">
-        <span className="text-sm font-medium text-gray-600">
-          {completed}/{credits} Credits
-        </span>
-        {completed === credits ? (
-          <Check className="ml-2 text-green-500 w-5 h-5" />
-        ) : (
-          <Clock className="ml-2 text-yellow-500 w-5 h-5" />
-        )}
-      </div>
-    </div>
-    <div className="space-y-3">
-      {courses.map((course, index) => (
-        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-          <div>
-            <p className="font-medium text-gray-800">{course.code}</p>
-            <p className="text-sm text-gray-600">{course.name}</p>
-          </div>
-          <div className="flex items-center">
-            <span className="text-sm font-medium text-gray-600 mr-2">
-              {course.credits} Credits
-            </span>
-            {course.status === 'completed' && (
-              <Check className="text-green-500 w-5 h-5" />
-            )}
-            {course.status === 'in-progress' && (
-              <Clock className="text-yellow-500 w-5 h-5" />
-            )}
-            {course.status === 'pending' && (
-              <AlertCircle className="text-gray-400 w-5 h-5" />
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+const getProgressColor = (percentage: number) => {
+  if (percentage === 100) return 'bg-green-500';
+  if (percentage >= 50) return 'bg-yellow-500';
+  return 'bg-gray-300';
+};
 
-// ...existing code...
+export default function DegreeAuditPage() {
+  const requirements: Requirement[] = [
+    {
+      name: "Computer Science Core",
+      credits: 36,
+      completed: 24,
+      status: "in-progress",
+      courses: [
+        {
+          code: "COP 3502C",
+          name: "Computer Science I",
+          credits: 3,
+          grade: "A",
+          status: "completed",
+          term: "Fall 2024"
+        },
+        {
+          code: "COP 3503C",
+          name: "Computer Science II",
+          credits: 3,
+          grade: "A-",
+          status: "completed",
+          term: "Spring 2025"
+        },
+        {
+          code: "COT 3100C",
+          name: "Introduction to Discrete Structures",
+          credits: 3,
+          status: "in-progress",
+          term: "Spring 2025"
+        },
+        {
+          code: "COP 3402",
+          name: "Systems Software",
+          credits: 3,
+          status: "planned",
+          term: "Fall 2025"
+        }
+      ]
+    },
+    {
+      name: "Mathematics",
+      credits: 12,
+      completed: 6,
+      status: "in-progress",
+      courses: [
+        {
+          code: "MAC 2311C",
+          name: "Calculus I",
+          credits: 3,
+          grade: "B+",
+          status: "completed"
+        },
+        {
+          code: "MAC 2312",
+          name: "Calculus II",
+          credits: 3,
+          status: "in-progress"
+        }
+      ]
+    }
+  ];
 
-const DegreeAudit = () => {
-    const degreeRequirements: {
-      [key: string]: RequirementBlockProps
-    } = {
-      general: {
-        title: "General Education Requirements",
-        credits: 36,
-        completed: 36,
-        courses: [
-          { code: "ENC1101", name: "Composition I", credits: 3, status: "completed" as const },
-          { code: "ENC1102", name: "Composition II", credits: 3, status: "completed" as const },
-          { code: "MAC2311C", name: "Calculus I", credits: 4, status: "completed" as const },
-          { code: "PHY2048C", name: "Physics I", credits: 4, status: "completed" as const }
-        ]
-      },
-      core: {
-        title: "Computer Science Core",
-        credits: 42,
-        completed: 30,
-        courses: [
-          { code: "COP3502C", name: "Computer Science I", credits: 3, status: "completed" as const },
-          { code: "COP3503C", name: "Computer Science II", credits: 3, status: "completed" as const },
-          { code: "COT3100C", name: "Discrete Structures", credits: 3, status: "in-progress" as const },
-          { code: "CDA3103C", name: "Computer Logic", credits: 3, status: "pending" as const }
-        ]
-      },
-      restricted: {
-        title: "Restricted Electives",
-        credits: 15,
-        completed: 6,
-        courses: [
-          { code: "CIS4615", name: "Secure Software Dev", credits: 3, status: "completed" as const },
-          { code: "CAP4630", name: "Artificial Intelligence", credits: 3, status: "in-progress" as const },
-          { code: "COP4520", name: "Parallel Processing", credits: 3, status: "pending" as const }
-        ]
-      }
-    };
-  
-    // ...rest of the component code...
-  };
+  const totalCredits = requirements.reduce((sum, req) => sum + req.credits, 0);
+  const completedCredits = requirements.reduce((sum, req) => sum + req.completed, 0);
+  const overallProgress = (completedCredits / totalCredits) * 100;
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Degree Audit</h1>
-          <div className="flex items-center space-x-2">
-            <BookOpen className="text-yellow-500 w-6 h-6" />
-            <span className="text-lg font-medium text-gray-800">
-              Computer Science, B.S.
-            </span>
+          <div className="text-sm text-gray-600">
+            Last Updated: March 4, 2025
           </div>
         </div>
 
         <div className="bg-white border border-yellow-200 rounded-xl shadow-lg p-6 mb-8">
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-3 gap-6 mb-6">
             <div className="text-center">
-              <p className="text-sm text-gray-600">Total Credits Required</p>
-              <p className="text-2xl font-bold text-gray-800">120</p>
+              <p className="text-sm text-gray-600">Program</p>
+              <p className="text-2xl font-bold text-gray-800">Computer Science, B.S.</p>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-600">Credits Completed</p>
-              <p className="text-2xl font-bold text-green-600">72</p>
+              <p className="text-2xl font-bold text-green-600">{completedCredits}/{totalCredits}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-gray-600">Current GPA</p>
-              <p className="text-2xl font-bold text-yellow-600">3.8</p>
+              <p className="text-sm text-gray-600">Expected Graduation</p>
+              <p className="text-2xl font-bold text-yellow-600">May 2026</p>
             </div>
+          </div>
+          
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className={`${getProgressColor(overallProgress)} h-2 rounded-full transition-all duration-500`}
+              style={{ width: `${overallProgress}%` }}
+            />
           </div>
         </div>
 
-        <RequirementBlock {...degreeRequirements.general} />
-        <RequirementBlock {...degreeRequirements.core} />
-        <RequirementBlock {...degreeRequirements.restricted} />
+        <div className="space-y-6">
+          {requirements.map((req) => {
+            const progress = (req.completed / req.credits) * 100;
+            return (
+              <div key={req.name} className="bg-white border border-yellow-200 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-200">
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold text-gray-800">{req.name}</h2>
+                    <span className="text-sm text-gray-600">
+                      {req.completed}/{req.credits} Credits
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 mb-4">
+                    <div
+                      className={`${getProgressColor(progress)} h-1.5 rounded-full transition-all duration-500`}
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    {req.courses.map((course) => (
+                      <div 
+                        key={course.code} 
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                      >
+                        <div>
+                          <p className="font-medium text-gray-800">{course.code} - {course.name}</p>
+                          <div className="flex items-center space-x-2 text-sm text-gray-600">
+                            <span>{course.credits} Credits</span>
+                            {course.term && (
+                              <>
+                                <span>•</span>
+                                <span>{course.term}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {course.grade && <span className="text-sm font-medium text-gray-700">{course.grade}</span>}
+                          {course.status === 'completed' && (
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                          )}
+                          {course.status === 'in-progress' && (
+                            <Clock className="w-5 h-5 text-yellow-500" />
+                          )}
+                          {course.status === 'planned' && (
+                            <BookOpen className="w-5 h-5 text-blue-500" />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
-};
-
-export default DegreeAudit;
+}
