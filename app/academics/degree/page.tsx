@@ -59,40 +59,47 @@ const RequirementBlock: React.FC<RequirementBlockProps> = ({ title, credits, com
   </div>
 );
 
+// ...existing code...
+
 const DegreeAudit = () => {
-  const degreeRequirements = {
-    general: {
-      title: "General Education Requirements",
-      credits: 36,
-      completed: 36,
-      courses: [
-        { code: "ENC1101", name: "Composition I", credits: 3, status: "completed" },
-        { code: "ENC1102", name: "Composition II", credits: 3, status: "completed" },
-        { code: "MAC2311C", name: "Calculus I", credits: 4, status: "completed" },
-        { code: "PHY2048C", name: "Physics I", credits: 4, status: "completed" }
-      ]
-    },
-    core: {
-      title: "Computer Science Core",
-      credits: 42,
-      completed: 30,
-      courses: [
-        { code: "COP3502C", name: "Computer Science I", credits: 3, status: "completed" },
-        { code: "COP3503C", name: "Computer Science II", credits: 3, status: "completed" },
-        { code: "COT3100C", name: "Discrete Structures", credits: 3, status: "in-progress" },
-        { code: "CDA3103C", name: "Computer Logic", credits: 3, status: "pending" }
-      ]
-    },
-    restricted: {
-      title: "Restricted Electives",
-      credits: 15,
-      completed: 6,
-      courses: [
-        { code: "CIS4615", name: "Secure Software Dev", credits: 3, status: "completed" },
-        { code: "CAP4630", name: "Artificial Intelligence", credits: 3, status: "in-progress" },
-        { code: "COP4520", name: "Parallel Processing", credits: 3, status: "pending" }
-      ]
-    }
+    const degreeRequirements: {
+      [key: string]: RequirementBlockProps
+    } = {
+      general: {
+        title: "General Education Requirements",
+        credits: 36,
+        completed: 36,
+        courses: [
+          { code: "ENC1101", name: "Composition I", credits: 3, status: "completed" as const },
+          { code: "ENC1102", name: "Composition II", credits: 3, status: "completed" as const },
+          { code: "MAC2311C", name: "Calculus I", credits: 4, status: "completed" as const },
+          { code: "PHY2048C", name: "Physics I", credits: 4, status: "completed" as const }
+        ]
+      },
+      core: {
+        title: "Computer Science Core",
+        credits: 42,
+        completed: 30,
+        courses: [
+          { code: "COP3502C", name: "Computer Science I", credits: 3, status: "completed" as const },
+          { code: "COP3503C", name: "Computer Science II", credits: 3, status: "completed" as const },
+          { code: "COT3100C", name: "Discrete Structures", credits: 3, status: "in-progress" as const },
+          { code: "CDA3103C", name: "Computer Logic", credits: 3, status: "pending" as const }
+        ]
+      },
+      restricted: {
+        title: "Restricted Electives",
+        credits: 15,
+        completed: 6,
+        courses: [
+          { code: "CIS4615", name: "Secure Software Dev", credits: 3, status: "completed" as const },
+          { code: "CAP4630", name: "Artificial Intelligence", credits: 3, status: "in-progress" as const },
+          { code: "COP4520", name: "Parallel Processing", credits: 3, status: "pending" as const }
+        ]
+      }
+    };
+  
+    // ...rest of the component code...
   };
 
   return (
