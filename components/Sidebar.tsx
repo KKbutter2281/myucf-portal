@@ -18,7 +18,7 @@ const menuItems = [
         title: "Academics",
         tabs: [
             { name: "Schedule Generator", url: "/academics/schedule-gen" },
-            { name: "Degree Audit", url: "/academics/degree-audit" },
+            { name: "Degree Audit", url: "/academics/degree" },
             { name: "Transcripts", url: "/academics/transcripts" },
             { name: "Enrollment Verification", url: "/academics/enrollment" },
         ],
