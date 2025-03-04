@@ -3,7 +3,21 @@
 import React from 'react';
 import { BookOpen, Check, AlertCircle, Clock } from 'lucide-react';
 
-const RequirementBlock = ({ title, credits, completed, courses }) => (
+interface Course {
+  code: string;
+  name: string;
+  credits: number;
+  status: 'completed' | 'in-progress' | 'pending';
+}
+
+interface RequirementBlockProps {
+  title: string;
+  credits: number;
+  completed: number;
+  courses: Course[];
+}
+
+const RequirementBlock: React.FC<RequirementBlockProps> = ({ title, credits, completed, courses }) => (
   <div className="bg-white border border-yellow-200 rounded-lg p-6 mb-6">
     <div className="flex justify-between items-center mb-4">
       <h3 className="text-xl font-bold text-gray-800">{title}</h3>
