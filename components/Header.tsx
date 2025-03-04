@@ -4,9 +4,9 @@ const Header = () => {
   return (
     <header className="bg-black text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-2xl font-bold">
-          <span className="text-white">my</span>
-          <span className="text-[#FFB302]">UCF</span>
+        <h1 href="/" className="text-2xl font-bold">
+        <a href="/" className="text-white">my</a>
+        <a href="/" className="text-yellow-500">UCF</a>
         </h1>
         <nav>
           <ul className="flex gap-4">
