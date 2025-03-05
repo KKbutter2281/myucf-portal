@@ -26,8 +26,8 @@ const menuItems = [
     {
         title: "Tasks & Holds",
         tabs: [
-            { name: "Holds", url: "/tasks-holds/holds" },
-            { name: "To-Do List", url: "/tasks-holds/todo-list" },
+            { name: "Holds", url: "/tasks/holds" },
+            { name: "To-Do List", url: "/tasks/to-dos" },
         ],
     },
     {

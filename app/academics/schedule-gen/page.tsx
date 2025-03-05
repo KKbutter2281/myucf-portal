@@ -1,35 +1,46 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { Clock, Calendar, Ban, Plus, ChevronDown, Check } from 'lucide-react';
-import { courseCatalog } from '@/data/courses';
+import React from 'react'
+import { Clock, Calendar, Ban, Plus, ChevronDown, ChevronLeft, ChevronRight, Check, Info } from 'lucide-react'
+import { courseCatalog } from '@/data/courses'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 interface Course {
-  id: string;
-  name: string;
-  sections: CourseSection[];
+  id: string
+  name: string
+  sections: CourseSection[]
 }
 
 interface CourseSection {
-  id: string;
-  instructor: string;
+  id: string
+  instructor: string
   schedule: {
-    days: string[];
-    startTime: string;
-    endTime: string;
-    location: string;
-  };
-  seats: number;
+    days: string[]
+    startTime: string
+    endTime: string
+    location: string
+  }
+  seats: number
 }
 
 interface TimeBlock {
-  days: string[];
-  startTime: string;
-  endTime: string;
-  reason: string;
+  days: string[]
+  startTime: string
+  endTime: string
+  reason: string
 }
 
-const availableCourses = courseCatalog;
+const availableCourses = courseCatalog
 
 const dayMap: { [key: string]: string } = {
   'Monday': 'M',
@@ -42,40 +53,40 @@ const dayMap: { [key: string]: string } = {
   'W': 'Wednesday',
   'Th': 'Thursday',
   'F': 'Friday'
-};
+}
 
-const formatDay = (day: string): string => dayMap[day] || day;
+const formatDay = (day: string): string => dayMap[day] || day
 
 const timeToMinutes = (time: string): number => {
-  const [hours, minutes] = time.split(':').map(Number);
-  return hours * 60 + minutes;
-};
+  const [hours, minutes] = time.split(':').map(Number)
+  return hours * 60 + minutes
+}
 
 const hasTimeConflict = (schedule1: CourseSection, schedule2: CourseSection): boolean => {
-  const start1 = timeToMinutes(schedule1.schedule.startTime);
-  const end1 = timeToMinutes(schedule1.schedule.endTime);
-  const start2 = timeToMinutes(schedule2.schedule.startTime);
-  const end2 = timeToMinutes(schedule2.schedule.endTime);
+  const start1 = timeToMinutes(schedule1.schedule.startTime)
+  const end1 = timeToMinutes(schedule1.schedule.endTime)
+  const start2 = timeToMinutes(schedule2.schedule.startTime)
+  const end2 = timeToMinutes(schedule2.schedule.endTime)
 
   // Convert long day names to short format for comparison
-  const days1 = schedule1.schedule.days.map(formatDay);
-  const days2 = schedule2.schedule.days.map(formatDay);
+  const days1 = schedule1.schedule.days.map(formatDay)
+  const days2 = schedule2.schedule.days.map(formatDay)
 
   // Check if schedules share any days
-  const sharedDays = days1.some(day => days2.includes(day));
+  const sharedDays = days1.some(day => days2.includes(day))
 
-  if (!sharedDays) return false;
+  if (!sharedDays) return false
 
   // Check time overlap
-  return (start1 < end2 && start2 < end1);
-};
+  return (start1 < end2 && start2 < end1)
+}
 
 const generateAllPossibleSchedules = (
   selectedCourseIds: string[],
   availableCourses: Course[],
   timeBlocks: TimeBlock[]
 ): CourseSection[][] => {
-  if (selectedCourseIds.length === 0) return [];
+  if (selectedCourseIds.length === 0) return []
 
   // Convert timeBlocks to CourseSection format for conflict checking
   const timeBlockSections: CourseSection[] = timeBlocks.map((block, index) => ({
@@ -88,16 +99,16 @@ const generateAllPossibleSchedules = (
       location: block.reason
     },
     seats: 0
-  }));
+  }))
 
   // Get all sections for selected courses
   const courseSections = selectedCourseIds.map(courseId => {
-    const course = availableCourses.find(c => c.id === courseId);
+    const course = availableCourses.find(c => c.id === courseId)
     return {
       courseId,
       sections: course?.sections || []
-    };
-  });
+    }
+  })
 
   const generateScheduleCombinations = (
     currentIndex: number,
@@ -105,11 +116,11 @@ const generateAllPossibleSchedules = (
   ): CourseSection[][] => {
     // Base case: we've processed all courses
     if (currentIndex === courseSections.length) {
-      return [currentSchedule];
+      return [currentSchedule]
     }
 
-    const results: CourseSection[][] = [];
-    const currentCourse = courseSections[currentIndex];
+    const results: CourseSection[][] = []
+    const currentCourse = courseSections[currentIndex]
 
     // Try each section of the current course
     for (const section of currentCourse.sections) {
@@ -117,31 +128,39 @@ const generateAllPossibleSchedules = (
       // or with any time blocks
       const hasConflict = [...currentSchedule, ...timeBlockSections].some(
         existingSection => hasTimeConflict(existingSection, section)
-      );
+      )
 
       if (!hasConflict) {
         // This section works, try the next course
         const nextSchedules = generateScheduleCombinations(
           currentIndex + 1,
           [...currentSchedule, section]
-        );
-        results.push(...nextSchedules);
+        )
+        results.push(...nextSchedules)
       }
     }
 
-    return results;
-  };
+    return results
+  }
 
-  return generateScheduleCombinations(0, []);
-};
+  return generateScheduleCombinations(0, [])
+}
 
-const ScheduleGenerator = () => {
-  const [selectedCourses, setSelectedCourses] = React.useState<string[]>([]);
-  const [timeBlocks, setTimeBlocks] = React.useState<TimeBlock[]>([]);
-  const [possibleSchedules, setPossibleSchedules] = React.useState<CourseSection[][]>([]);
-  const [currentSchedule, setCurrentSchedule] = React.useState(0);
-  const [isGenerating, setIsGenerating] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+const formatTime = (time: string) => {
+  const [hours, minutes] = time.split(':').map(Number)
+  const period = hours >= 12 ? 'PM' : 'AM'
+  const displayHours = hours % 12 || 12
+  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`
+}
+
+export default function ScheduleGenerator() {
+  const [selectedCourses, setSelectedCourses] = React.useState<string[]>([])
+  const [timeBlocks, setTimeBlocks] = React.useState<TimeBlock[]>([])
+  const [possibleSchedules, setPossibleSchedules] = React.useState<CourseSection[][]>([])
+  const [currentSchedule, setCurrentSchedule] = React.useState(0)
+  const [isGenerating, setIsGenerating] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+  const [activeTab, setActiveTab] = React.useState('courses')
 
   const addTimeBlock = () => {
     setTimeBlocks([...timeBlocks, {
@@ -149,283 +168,338 @@ const ScheduleGenerator = () => {
       startTime: "09:00",
       endTime: "10:00",
       reason: "Break"
-    }]);
-  };
+    }])
+  }
 
   const removeTimeBlock = (index: number) => {
-    setTimeBlocks(timeBlocks.filter((_, i) => i !== index));
-  };
+    setTimeBlocks(timeBlocks.filter((_, i) => i !== index))
+  }
 
   const generateSchedules = async () => {
     if (selectedCourses.length === 0) {
-      setError('Please select at least one course');
-      return;
+      setError('Please select at least one course')
+      return
     }
 
     const schedules = generateAllPossibleSchedules(
       selectedCourses,
       availableCourses,
       timeBlocks
-    );
+    )
 
     if (schedules.length === 0) {
-      setError('No possible schedules found! Try selecting different courses or removing some time blocks.');
-      return;
+      setError('No possible schedules found! Try selecting different courses or removing some time blocks.')
+      return
     }
 
-    setPossibleSchedules(schedules);
-    setCurrentSchedule(0);
-    setError(null);
-  };
+    setPossibleSchedules(schedules)
+    setCurrentSchedule(0)
+    setError(null)
+    setActiveTab('schedules')
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Schedule Generator</h1>
-          <p className="mt-2 text-gray-600">Select your courses and preferences to generate possible schedules</p>
-          {error && (
-            <div className="mt-2 p-2 bg-red-100 text-red-700 rounded">
-              {error}
-            </div>
-          )}
+    <div className="container mx-auto py-8 px-4">
+      <div className="flex flex-col space-y-6">
+        <div className="flex flex-col space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">Schedule Generator</h1>
+          <p className="text-muted-foreground">
+            Select your courses and preferences to generate possible schedules
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            {/* Course Selection */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Select Courses</h2>
-              <div className="relative">
-                <select 
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  onChange={(e) => {
-                    if (e.target.value && !selectedCourses.includes(e.target.value)) {
-                      setSelectedCourses([...selectedCourses, e.target.value]);
-                    }
-                  }}
-                  value=""
-                >
-                  <option value="">Add a course...</option>
-                  {availableCourses.map(course => (
-                    <option key={course.id} value={course.id}>
-                      {course.id} - {course.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+        {error && (
+          <Alert variant="destructive">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-              <div className="mt-4 space-y-2">
-                {selectedCourses.map(courseId => {
-                  const course = availableCourses.find(c => c.id === courseId);
-                  return (
-                    <div key={courseId} className="flex justify-between items-center p-2 bg-yellow-50 rounded">
-                      <span>{course?.id} - {course?.name}</span>
-                      <button 
-                        onClick={() => setSelectedCourses(selectedCourses.filter(id => id !== courseId))}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Ban className="w-4 h-4" />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Time Blocks */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Time Blocks</h2>
-                <button 
-                  onClick={addTimeBlock}
-                  className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 px-3 py-1 rounded flex items-center"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Block
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {timeBlocks.map((block, index) => (
-                  <div key={index} className="p-4 border border-gray-200 rounded">
-                    <div className="flex justify-between mb-2">
-                      <input
-                        type="text"
-                        placeholder="Block reason"
-                        value={block.reason}
-                        onChange={(e) => {
-                          const newBlocks = [...timeBlocks];
-                          newBlocks[index].reason = e.target.value;
-                          setTimeBlocks(newBlocks);
-                        }}
-                        className="border border-gray-300 rounded px-2 py-1"
-                      />
-                      <button
-                        onClick={() => removeTimeBlock(index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Ban className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Start Time</label>
-                        <input
-                          type="time"
-                          value={block.startTime}
-                          onChange={(e) => {
-                            const newBlocks = [...timeBlocks];
-                            newBlocks[index].startTime = e.target.value;
-                            setTimeBlocks(newBlocks);
-                          }}
-                          className="mt-1 block w-full border border-gray-300 rounded-md"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">End Time</label>
-                        <input
-                          type="time"
-                          value={block.endTime}
-                          onChange={(e) => {
-                            const newBlocks = [...timeBlocks];
-                            newBlocks[index].endTime = e.target.value;
-                            setTimeBlocks(newBlocks);
-                          }}
-                          className="mt-1 block w-full border border-gray-300 rounded-md"
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700">Days</label>
-                      <div className="flex gap-2 mt-1">
-                        {['M', 'T', 'W', 'Th', 'F'].map(day => (
-                          <button
-                            key={day}
-                            onClick={() => {
-                              const newBlocks = [...timeBlocks];
-                              const days = newBlocks[index].days;
-                              if (days.includes(day)) {
-                                newBlocks[index].days = days.filter(d => d !== day);
-                              } else {
-                                newBlocks[index].days = [...days, day];
-                              }
-                              setTimeBlocks(newBlocks);
-                            }}
-                            className={`px-3 py-1 rounded ${
-                              block.days.includes(day)
-                                ? 'bg-yellow-400 text-gray-800'
-                                : 'bg-gray-100 text-gray-600'
-                            }`}
-                          >
-                            {day}
-                          </button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1 space-y-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="courses">Courses</TabsTrigger>
+                <TabsTrigger value="timeblocks">Time Blocks</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="courses" className="space-y-4 mt-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle>Select Courses</CardTitle>
+                    <CardDescription>
+                      Choose the courses you want to include in your schedule
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Select
+                      onValueChange={(value) => {
+                        if (value && !selectedCourses.includes(value)) {
+                          setSelectedCourses([...selectedCourses, value])
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Add a course..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableCourses.map(course => (
+                          <SelectItem key={course.id} value={course.id}>
+                            {course.id} - {course.name}
+                          </SelectItem>
                         ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                      </SelectContent>
+                    </Select>
 
-            <button
+                    <ScrollArea className="h-[250px] rounded-md border p-2">
+                      <div className="space-y-2">
+                        {selectedCourses.length === 0 ? (
+                          <p className="text-center text-muted-foreground py-8">
+                            No courses selected
+                          </p>
+                        ) : (
+                          selectedCourses.map(courseId => {
+                            const course = availableCourses.find(c => c.id === courseId)
+                            return (
+                              <div key={courseId} className="flex justify-between items-center p-2 bg-secondary/50 rounded-md">
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{course?.id}</span>
+                                  <span className="text-sm text-muted-foreground">{course?.name}</span>
+                                </div>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => setSelectedCourses(selectedCourses.filter(id => id !== courseId))}
+                                  className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                                >
+                                  <Ban className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            )
+                          })
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="timeblocks" className="space-y-4 mt-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle>Time Blocks</CardTitle>
+                        <CardDescription>
+                          Add blocks of time you want to keep free
+                        </CardDescription>
+                      </div>
+                      <Button onClick={addTimeBlock} size="sm" className="h-8">
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <ScrollArea className="h-[350px] pr-4">
+                      <div className="space-y-4">
+                        {timeBlocks.length === 0 ? (
+                          <p className="text-center text-muted-foreground py-8">
+                            No time blocks added
+                          </p>
+                        ) : (
+                          timeBlocks.map((block, index) => (
+                            <Card key={index} className="border border-muted">
+                              <CardHeader className="p-3 pb-0">
+                                <div className="flex justify-between items-center">
+                                  <Input
+                                    placeholder="Block reason"
+                                    value={block.reason}
+                                    onChange={(e) => {
+                                      const newBlocks = [...timeBlocks]
+                                      newBlocks[index].reason = e.target.value
+                                      setTimeBlocks(newBlocks)
+                                    }}
+                                    className="h-8 text-sm"
+                                  />
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                                    onClick={() => removeTimeBlock(index)}
+                                  >
+                                    <Ban className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="p-3 pt-2">
+                                <div className="grid grid-cols-2 gap-2 mb-2">
+                                  <div className="space-y-1">
+                                    <label className="text-xs font-medium">Start Time</label>
+                                    <Input
+                                      type="time"
+                                      value={block.startTime}
+                                      onChange={(e) => {
+                                        const newBlocks = [...timeBlocks]
+                                        newBlocks[index].startTime = e.target.value
+                                        setTimeBlocks(newBlocks)
+                                      }}
+                                      className="h-8"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-xs font-medium">End Time</label>
+                                    <Input
+                                      type="time"
+                                      value={block.endTime}
+                                      onChange={(e) => {
+                                        const newBlocks = [...timeBlocks]
+                                        newBlocks[index].endTime = e.target.value
+                                        setTimeBlocks(newBlocks)
+                                      }}
+                                      className="h-8"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-xs font-medium">Days</label>
+                                  <ToggleGroup type="multiple" variant="outline" className="justify-start">
+                                    {['M', 'T', 'W', 'Th', 'F'].map(day => (
+                                      <ToggleGroupItem 
+                                        key={day} 
+                                        value={day}
+                                        aria-label={dayMap[day]}
+                                        data-state={block.days.includes(day) ? "on" : "off"}
+                                        onClick={() => {
+                                          const newBlocks = [...timeBlocks]
+                                          const days = newBlocks[index].days
+                                          if (days.includes(day)) {
+                                            newBlocks[index].days = days.filter(d => d !== day)
+                                          } else {
+                                            newBlocks[index].days = [...days, day]
+                                          }
+                                          setTimeBlocks(newBlocks)
+                                        }}
+                                        className="h-8 w-8 p-0"
+                                      >
+                                        {day}
+                                      </ToggleGroupItem>
+                                    ))}
+                                  </ToggleGroup>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+
+            <Button
               onClick={async () => {
                 try {
-                  setIsGenerating(true);
-                  await generateSchedules();
+                  setIsGenerating(true)
+                  await generateSchedules()
                 } catch (err) {
-                  setError(err instanceof Error ? err.message : 'An error occurred');
+                  setError(err instanceof Error ? err.message : 'An error occurred')
                 } finally {
-                  setIsGenerating(false);
+                  setIsGenerating(false)
                 }
               }}
-              disabled={isGenerating}
-              className={`w-full py-3 rounded-lg font-semibold ${
-                isGenerating
-                  ? 'bg-gray-300 cursor-not-allowed'
-                  : 'bg-yellow-400 hover:bg-yellow-500 text-gray-800'
-              }`}
+              disabled={isGenerating || selectedCourses.length === 0}
+              className="w-full"
             >
               {isGenerating ? 'Generating...' : 'Generate Schedules'}
-            </button>
+            </Button>
           </div>
 
-          {/* Schedule Display */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Generated Schedules</h2>
-              {possibleSchedules.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setCurrentSchedule(prev => Math.max(0, prev - 1))}
-                    disabled={currentSchedule === 0}
-                    className={`p-2 rounded ${
-                      currentSchedule === 0
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                    }`}
-                  >
-                    Previous
-                  </button>
-                  <span>
-                    {currentSchedule + 1} of {possibleSchedules.length}
-                  </span>
-                  <button
-                    onClick={() => setCurrentSchedule(prev => Math.min(possibleSchedules.length - 1, prev + 1))}
-                    disabled={currentSchedule === possibleSchedules.length - 1}
-                    className={`p-2 rounded ${
-                      currentSchedule === possibleSchedules.length - 1
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                    }`}
-                  >
-                    Next
-                  </button>
+          <div className="lg:col-span-2">
+            <Card className="h-full">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-center">
+                  <CardTitle>Generated Schedules</CardTitle>
+                  {possibleSchedules.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setCurrentSchedule(prev => Math.max(0, prev - 1))}
+                        disabled={currentSchedule === 0}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <span className="text-sm">
+                        {currentSchedule + 1} of {possibleSchedules.length}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setCurrentSchedule(prev => Math.min(possibleSchedules.length - 1, prev + 1))}
+                        disabled={currentSchedule === possibleSchedules.length - 1}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-
-            {possibleSchedules.length > 0 ? (
-              <WeeklyScheduleGrid schedule={possibleSchedules[currentSchedule]} timeBlocks={timeBlocks} />
-            ) : (
-              <div className="text-center text-gray-500 py-12">
-                Generate schedules to see them here
-              </div>
-            )}
+                <CardDescription>
+                  {possibleSchedules.length > 0 
+                    ? `Viewing schedule ${currentSchedule + 1} of ${possibleSchedules.length} possible combinations`
+                    : 'Generate schedules to see them here'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                {possibleSchedules.length > 0 ? (
+                  <WeeklyScheduleGrid schedule={possibleSchedules[currentSchedule]} timeBlocks={timeBlocks} />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-[500px] text-center text-muted-foreground">
+                    <Calendar className="h-12 w-12 mb-4 text-muted-foreground/50" />
+                    <p className="mb-2">No schedules generated yet</p>
+                    <p className="text-sm max-w-md">
+                      Select your courses and preferences, then click "Generate Schedules" to see possible combinations
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
 const WeeklyScheduleGrid = ({ schedule, timeBlocks }: { schedule: CourseSection[], timeBlocks: TimeBlock[] }) => {
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-  const hours = Array.from({ length: 14 }, (_, i) => i + 7); // 7 AM to 8 PM
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+  const hours = Array.from({ length: 14 }, (_, i) => i + 7) // 7 AM to 8 PM
 
   const getEventStyle = (start: string, end: string) => {
-    const startHour = parseInt(start.split(':')[0]);
-    const startMinute = parseInt(start.split(':')[1]);
-    const endHour = parseInt(end.split(':')[0]);
-    const endMinute = parseInt(end.split(':')[1]);
+    const startHour = parseInt(start.split(':')[0])
+    const startMinute = parseInt(start.split(':')[1])
+    const endHour = parseInt(end.split(':')[0])
+    const endMinute = parseInt(end.split(':')[1])
     
-    const top = (startHour - 7) * 60 + startMinute;
-    const height = (endHour - startHour) * 60 + (endMinute - startMinute);
+    const top = (startHour - 7) * 60 + startMinute
+    const height = (endHour - startHour) * 60 + (endMinute - startMinute)
     
     return {
       top: `${top}px`,
       height: `${height}px`,
-    };
-  };
+    }
+  }
 
   return (
-    <div className="border border-gray-200 rounded overflow-auto">
-      <div className="min-w-[800px]">
+    <div className="border-t">
+      <div className="min-w-[800px] overflow-auto">
         {/* Header */}
-        <div className="grid grid-cols-6 bg-yellow-50">
-          <div className="p-2 border-b border-r border-gray-200" />
+        <div className="grid grid-cols-6 bg-muted/30">
+          <div className="p-2 border-b border-r" />
           {days.map(day => (
-            <div key={day} className="p-2 font-semibold text-center border-b border-r border-gray-200">
+            <div key={day} className="p-2 font-medium text-center border-b border-r">
               {day}
             </div>
           ))}
@@ -435,11 +509,11 @@ const WeeklyScheduleGrid = ({ schedule, timeBlocks }: { schedule: CourseSection[
         <div className="relative">
           {/* Time Labels */}
           <div className="grid grid-cols-6" style={{ height: '840px' }}> {/* 14 hours * 60px */}
-            <div className="relative border-r border-gray-200">
+            <div className="relative border-r">
               {hours.map(hour => (
                 <div
                   key={hour}
-                  className="absolute w-full text-xs text-gray-500 text-right pr-2"
+                  className="absolute w-full text-xs text-muted-foreground text-right pr-2"
                   style={{ top: `${(hour - 7) * 60}px` }}
                 >
                   {hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
@@ -449,19 +523,19 @@ const WeeklyScheduleGrid = ({ schedule, timeBlocks }: { schedule: CourseSection[
 
             {/* Grid Columns */}
             {days.map(day => (
-              <div key={day} className="relative border-r border-gray-200">
+              <div key={day} className="relative border-r">
                 {/* Hour lines */}
                 {hours.map(hour => (
                   <div
                     key={hour}
-                    className="absolute w-full border-t border-gray-100"
+                    className="absolute w-full border-t border-border/30"
                     style={{ top: `${(hour - 7) * 60}px` }}
                   />
                 ))}
 
                 {/* Course blocks */}
                 {schedule.map((section) => {
-                  const sectionDays = section.schedule.days.map(formatDay);
+                  const sectionDays = section.schedule.days.map(formatDay)
                   if (sectionDays.includes(formatDay(day))) {
                     return (
                       <div
@@ -469,15 +543,32 @@ const WeeklyScheduleGrid = ({ schedule, timeBlocks }: { schedule: CourseSection[
                         className="absolute w-full px-1"
                         style={getEventStyle(section.schedule.startTime, section.schedule.endTime)}
                       >
-                        <div className="h-full bg-yellow-100 rounded p-1 text-xs overflow-hidden">
-                          <div className="font-semibold">{section.id}</div>
-                          <div className="text-gray-600">{section.location}</div>
-                          <div className="text-gray-500 text-[10px]">{section.instructor}</div>
-                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="h-full bg-primary/10 border border-primary/20 rounded-md p-1.5 text-xs overflow-hidden hover:bg-primary/15 transition-colors">
+                                <div className="font-medium">{section.id}</div>
+                                <div className="text-muted-foreground">{section.schedule.location}</div>
+                                <div className="text-[10px] text-muted-foreground truncate">{section.instructor}</div>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-[200px]">
+                              <div className="text-xs">
+                                <div className="font-bold">{section.id}</div>
+                                <div>{formatTime(section.schedule.startTime)} - {formatTime(section.schedule.endTime)}</div>
+                                <div>{section.schedule.location}</div>
+                                <div>{section.instructor}</div>
+                                <div className="text-muted-foreground mt-1">
+                                  {section.seats} seats available
+                                </div>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
-                    );
+                    )
                   }
-                  return null;
+                  return null
                 })}
 
                 {/* Time blocks */}
@@ -489,13 +580,16 @@ const WeeklyScheduleGrid = ({ schedule, timeBlocks }: { schedule: CourseSection[
                         className="absolute w-full px-1"
                         style={getEventStyle(block.startTime, block.endTime)}
                       >
-                        <div className="h-full bg-gray-100 rounded p-1 text-xs overflow-hidden">
-                          <div className="font-semibold">{block.reason}</div>
+                        <div className="h-full bg-muted border border-muted-foreground/20 rounded-md p-1.5 text-xs overflow-hidden">
+                          <div className="font-medium">{block.reason}</div>
+                          <div className="text-muted-foreground text-[10px]">
+                            {formatTime(block.startTime)} - {formatTime(block.endTime)}
+                          </div>
                         </div>
                       </div>
-                    );
+                    )
                   }
-                  return null;
+                  return null
                 })}
               </div>
             ))}
@@ -503,7 +597,5 @@ const WeeklyScheduleGrid = ({ schedule, timeBlocks }: { schedule: CourseSection[
         </div>
       </div>
     </div>
-  );
-};
-
-export default ScheduleGenerator;
+  )
+}
